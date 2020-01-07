@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/binary"
 	"errors"
 	"fmt"
 	"log"
@@ -42,17 +43,37 @@ func DcClientFromConfig(databasePath string, config map[string]string) *deltacha
 	return client
 }
 
-func BootstrapDcClientFromConfig(config Config) *deltachat.Client {
+func BootstrapDcClientFromConfig(config Config, ctx *BridgeContext) (*deltachat.Client, error) {
 	dcClient := DcClientFromConfig(config.App.DataFolder+"/deltachat.db", config.Deltachat)
 
-	context := dcClient.Context()
+	DCCtx := dcClient.Context()
 	userName := "user"
+	dcUserID := DCCtx.CreateContact(&userName, &config.App.UserAddress)
 
-	userID := context.CreateContact(&userName, &config.App.UserAddress)
+	userChatIDRaw := ctx.DB.Get([]byte("user-chat-id"))
+	var (
+		userChatID uint32
+		err        error
+	)
 
-	context.SendTextMessage(context.CreateChatByContactID(userID), "Whapp-Deltachat initialized")
+	if userChatIDRaw == nil {
+		userChatID, err = AddUserAsVerifiedContact(dcUserID, dcClient)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		userChatID = binary.LittleEndian.Uint32(userChatIDRaw)
+	}
 
-	return dcClient
+	userChatIDbs := make([]byte, 4)
+	binary.LittleEndian.PutUint32(userChatIDbs, userChatID)
+	err = ctx.DB.Put([]byte("user-chat-id"), userChatIDbs)
+
+	ctx.DCUserID = dcUserID
+	ctx.DCUserChatID = userChatID
+	ctx.DCContext = DCCtx
+
+	return dcClient, err
 }
 
 // Add a user as verified contact to the deltachat context. This is necessary to be able

@@ -15,23 +15,24 @@ import (
 
 func CreateAndLoginWhappConnection(
 	storageDir string,
-	dcContext *deltachat.Context,
-	dcUserID uint32,
-) (*whatsapp.Conn, error) {
-	wac, err := whatsapp.NewConn(20 * time.Second)
+	ctx *BridgeContext,
+) error {
+	wac, err := whatsapp.NewConn(300 * time.Second)
 
 	if err != nil {
-		return wac, err
+		return err
 	}
+
+	ctx.WhappConn = wac
 
 	var session whatsapp.Session
 
 	sessionFile := storageDir + "/whapp-session.json"
 	if _, err := os.Stat(sessionFile); os.IsNotExist(err) {
-		session, err = WhappQrLogin(storageDir, wac, dcContext, dcUserID)
+		session, err = WhappQrLogin(storageDir, ctx)
 
 		if err != nil {
-			return wac, err
+			return err
 		}
 	} else {
 		session = whatsapp.Session{}
@@ -41,26 +42,24 @@ func CreateAndLoginWhappConnection(
 		err = json.Unmarshal(sessionJson, &session)
 
 		if err != nil {
-			return wac, err
+			return err
 		}
 
 		session, err = wac.RestoreWithSession(session)
 
 		if err != nil {
-			return wac, err
+			return err
 		}
 	}
 
 	err = StoreWhappSession(session, storageDir)
 
-	return wac, err
+	return err
 }
 
 func WhappQrLogin(
 	storageDir string,
-	wac *whatsapp.Conn,
-	dcContext *deltachat.Context,
-	dcUserID uint32,
+	ctx *BridgeContext,
 ) (whatsapp.Session, error) {
 	qrChan := make(chan string)
 
@@ -79,21 +78,21 @@ func WhappQrLogin(
 			log.Fatal(err)
 		}
 
-		message := dcContext.NewMessage(deltachat.DC_MSG_IMAGE)
+		message := ctx.DCContext.NewMessage(deltachat.DC_MSG_IMAGE)
 
-		log.Println("MIME: " + mime.TypeByExtension("png"))
+		log.Println("MIME: " + mime.TypeByExtension(".png"))
 
 		message.SetFile(tmpFile.Name(), "image/png")
 
 		message.SetText("Scan this QR code from whatsapp")
 
-		dcContext.SendMessage(
-			dcContext.GetChatIDByContactID(dcUserID),
+		ctx.DCContext.SendMessage(
+			ctx.DCUserChatID,
 			message,
 		)
 	}()
 
-	session, err := wac.Login(qrChan)
+	session, err := ctx.WhappConn.Login(qrChan)
 
 	return session, err
 }

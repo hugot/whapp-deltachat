@@ -1,13 +1,11 @@
 package main
 
 import (
-	"encoding/binary"
 	"fmt"
 	"log"
 	"os"
 	"os/signal"
 
-	"github.com/Rhymen/go-whatsapp"
 	"github.com/hugot/go-deltachat/deltabot"
 	"github.com/hugot/go-deltachat/deltachat"
 	"github.com/hugot/whapp-deltachat/botcommands"
@@ -32,12 +30,6 @@ func main() {
 	ensureDirectoryOrDie(config.App.DataFolder)
 	ensureDirectoryOrDie(config.App.DataFolder + "/tmp")
 
-	dcClient := BootstrapDcClientFromConfig(*config)
-
-	// Give dc an opportunity to perform some close-down logic
-	// and close it's db etc.
-	defer dcClient.Close()
-
 	db := &Database{
 		dbPath: config.App.DataFolder + "/app.db",
 	}
@@ -48,37 +40,24 @@ func main() {
 		log.Fatal(err)
 	}
 
-	ctx := dcClient.Context()
-	userName := "user"
-	dcUserID := ctx.CreateContact(&userName, &config.App.UserAddress)
-
-	userChatIDRaw := db.Get([]byte("user-chat-id"))
-	var userChatID uint32
-
-	if userChatIDRaw == nil {
-		userChatID, err = AddUserAsVerifiedContact(dcUserID, dcClient)
-		if err != nil {
-			log.Fatal(err)
-		}
-	} else {
-		userChatID = binary.LittleEndian.Uint32(userChatIDRaw)
+	bridgeCtx := &BridgeContext{
+		DB: db,
 	}
 
-	userChatIDbs := make([]byte, 4)
-	binary.LittleEndian.PutUint32(userChatIDbs, userChatID)
-	err = db.Put([]byte("user-chat-id"), userChatIDbs)
+	dcClient, err := BootstrapDcClientFromConfig(*config, bridgeCtx)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	var wac *whatsapp.Conn
+	// Give dc an opportunity to perform some close-down logic
+	// and close it's db etc.
+	defer dcClient.Close()
 
 	for i := 0; i < 10; i++ {
-		wac, err = CreateAndLoginWhappConnection(
+		err = CreateAndLoginWhappConnection(
 			config.App.DataFolder,
-			dcClient.Context(),
-			dcUserID,
+			bridgeCtx,
 		)
 
 		if err == nil {
@@ -90,18 +69,19 @@ func main() {
 		log.Fatal(err)
 	}
 
-	wac.AddHandler(&WhappHandler{
-		dcContext: dcClient.Context(),
-		db:        db,
-		dcUserID:  dcUserID,
-		wac:       wac,
+	messageWorker := NewMessageWorker()
+	messageWorker.Start()
+
+	bridgeCtx.WhappConn.AddHandler(&WhappHandler{
+		BridgeContext: bridgeCtx,
+		MessageWorker: messageWorker,
 	})
 
 	bot := &deltabot.Bot{}
 
 	bot.AddCommand(&botcommands.Echo{})
 	bot.AddCommand(botcommands.NewWhappBridge(
-		wac, db, dcClient.Context().GetChatIDByContactID(dcUserID),
+		bridgeCtx.WhappConn, bridgeCtx.DB, bridgeCtx.DCUserChatID,
 	))
 
 	dcClient.On(deltachat.DC_EVENT_INCOMING_MSG, bot.HandleMessage)
