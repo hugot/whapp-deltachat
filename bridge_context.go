@@ -6,32 +6,25 @@ import (
 )
 
 type BridgeContext struct {
-	WhappConn    *whatsapp.Conn
-	DCContext    *deltachat.Context
-	DB           *Database
-	DCUserID     uint32
-	DCUserChatID uint32
+	WhappConn      *whatsapp.Conn
+	DCContext      *deltachat.Context
+	DB             *Database
+	MessageTracker *MessageTracker
+	DCUserID       uint32
+	DCUserChatID   uint32
 }
 
 // Find or create a deltachat verified group chat for a whatsapp JID and return it's ID.
-func (b *BridgeContext) GetOrCreateDCIDForJID(JID string, isGroup bool) (uint32, error) {
+func (b *BridgeContext) GetOrCreateDCIDForJID(JID string) (uint32, error) {
 	if DCID, _ := b.DB.GetDCIDForWhappJID(JID); DCID != nil {
 		return *DCID, nil
 	}
 
 	chatName := JID
-	if isGroup {
-		chat, ok := b.WhappConn.Store.Chats[JID]
+	chat, ok := b.WhappConn.Store.Chats[JID]
 
-		if ok {
-			chatName = chat.Name
-		}
-	} else {
-		contact, ok := b.WhappConn.Store.Contacts[JID]
-
-		if ok {
-			chatName = contact.Name
-		}
+	if ok {
+		chatName = chat.Name
 	}
 
 	DCID := b.DCContext.CreateGroupChat(true, chatName)

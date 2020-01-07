@@ -15,12 +15,14 @@ const (
 	JID_TO_DCID_INT uint8 = iota
 	DCID_TO_JID_INT
 	KEY_VALUE_INT
+	ID_WAS_SENT_INT
 )
 
 var (
 	JID_TO_DCID = []byte{JID_TO_DCID_INT}
 	DCID_TO_JID = []byte{DCID_TO_JID_INT}
 	KEY_VALUE   = []byte{KEY_VALUE_INT}
+	ID_WAS_SENT = []byte{ID_WAS_SENT_INT}
 )
 
 func (d *Database) Init() error {
@@ -37,6 +39,12 @@ func (d *Database) Init() error {
 		}
 
 		_, err = tx.CreateBucketIfNotExists(DCID_TO_JID)
+
+		if err != nil {
+			return err
+		}
+
+		_, err = tx.CreateBucketIfNotExists(ID_WAS_SENT)
 
 		if err != nil {
 			return err
@@ -135,4 +143,36 @@ func (d *Database) Get(key []byte) []byte {
 	})
 
 	return value
+}
+
+func (d *Database) MarkWhappMessagesSent(IDs []*string) error {
+	return d.db.Update(func(tx *bbolt.Tx) error {
+		bucket := tx.Bucket(ID_WAS_SENT)
+
+		for _, ID := range IDs {
+			if ID != nil {
+				bucket.Put([]byte(*ID), []byte{uint8(1)})
+			}
+		}
+
+		return nil
+	})
+}
+
+func (d *Database) WhappMessageWasSent(ID string) (bool, error) {
+	var wasSent bool = false
+
+	err := d.db.View(func(tx *bbolt.Tx) error {
+		bucket := tx.Bucket(ID_WAS_SENT)
+
+		rawWasSent := bucket.Get([]byte(ID))
+
+		if len(rawWasSent) > 0 && uint8(rawWasSent[0]) == uint8(1) {
+			wasSent = true
+		}
+
+		return nil
+	})
+
+	return wasSent, err
 }

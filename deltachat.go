@@ -43,12 +43,25 @@ func DcClientFromConfig(databasePath string, config map[string]string) *deltacha
 	return client
 }
 
+// Note: this manipulates the BridgeContext.
 func BootstrapDcClientFromConfig(config Config, ctx *BridgeContext) (*deltachat.Client, error) {
 	dcClient := DcClientFromConfig(config.App.DataFolder+"/deltachat.db", config.Deltachat)
 
 	DCCtx := dcClient.Context()
+
+	log.Println("Waiting for deltachat client to be configured")
+	for !DCCtx.IsConfigured() {
+	}
+
 	userName := "user"
 	dcUserID := DCCtx.CreateContact(&userName, &config.App.UserAddress)
+
+	// Send a message in a 1:1 chat first, this will let the user's client know that the
+	// crypto setup has changed if it has
+	DCCtx.SendTextMessage(
+		DCCtx.CreateChatByContactID(dcUserID),
+		"Hi, Whapp-Deltachat is initiallizing",
+	)
 
 	userChatIDRaw := ctx.DB.Get([]byte("user-chat-id"))
 	var (

@@ -36,15 +36,24 @@ func main() {
 
 	err = db.Init()
 
+	messageTracker := &MessageTracker{
+		DB: db,
+	}
+
+	defer messageTracker.Flush()
+
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	bridgeCtx := &BridgeContext{
-		DB: db,
+		DB:             db,
+		MessageTracker: messageTracker,
 	}
 
 	dcClient, err := BootstrapDcClientFromConfig(*config, bridgeCtx)
+
+	bridgeCtx.SendLog("Whapp-Deltachat started.")
 
 	if err != nil {
 		log.Fatal(err)
