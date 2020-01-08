@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"mime"
 
 	"github.com/Rhymen/go-whatsapp"
 	"github.com/hugot/go-deltachat/deltachat"
@@ -63,17 +64,7 @@ func MakeImageMessageAction(b *BridgeContext, m whatsapp.ImageMessage) MessageAc
 			return err
 		}
 
-		tmpFile, err := ioutil.TempFile(
-			b.Config.App.DataFolder+"/tmp",
-			"XXXXXXX-img",
-		)
-
-		if err != nil {
-			b.SendLog(err.Error())
-			return err
-		}
-
-		err = ioutil.WriteFile(tmpFile.Name(), imageData, 0600)
+		filename, err := WriteTempFile(b, imageData, "img")
 
 		if err != nil {
 			b.SendLog(err.Error())
@@ -82,11 +73,165 @@ func MakeImageMessageAction(b *BridgeContext, m whatsapp.ImageMessage) MessageAc
 
 		message := b.DCContext.NewMessage(deltachat.DC_MSG_IMAGE)
 		message.SetText(fmt.Sprintf("%s:\n%s", senderName, m.Caption))
-		message.SetFile(tmpFile.Name(), m.Type)
+		message.SetFile(filename, m.Type)
 
 		b.DCContext.SendMessage(DCID, message)
 
 		return b.MessageTracker.MarkSent(&m.Info.Id)
+	}
+}
+
+func MakeDocumentMessageAction(b *BridgeContext, m whatsapp.DocumentMessage) MessageAction {
+	return func() error {
+		if b.MessageWasSent(m.Info.Id) {
+			return nil
+		}
+
+		JID := m.Info.RemoteJid
+		DCID, err := b.GetOrCreateDCIDForJID(JID)
+
+		if err != nil {
+			b.SendLog(err.Error())
+			return err
+		}
+
+		senderName := DetermineSenderName(b, m.Info)
+
+		documentData, err := m.Download()
+
+		if err != nil {
+			b.SendLog(err.Error())
+			return err
+		}
+
+		filename, err := WriteTempFile(b, documentData, "doc")
+
+		if err != nil {
+			b.SendLog(err.Error())
+			return err
+		}
+
+		message := b.DCContext.NewMessage(deltachat.DC_MSG_FILE)
+		message.SetText(fmt.Sprintf("%s:\n%s", senderName, m.Title))
+		message.SetFile(filename, m.Type)
+
+		b.DCContext.SendMessage(DCID, message)
+
+		return b.MessageTracker.MarkSent(&m.Info.Id)
+	}
+}
+
+func MakeAudioMessageAction(b *BridgeContext, m whatsapp.AudioMessage) MessageAction {
+	return func() error {
+		if b.MessageWasSent(m.Info.Id) {
+			return nil
+		}
+
+		JID := m.Info.RemoteJid
+		DCID, err := b.GetOrCreateDCIDForJID(JID)
+
+		if err != nil {
+			b.SendLog(err.Error())
+			return err
+		}
+
+		senderName := DetermineSenderName(b, m.Info)
+
+		audioData, err := m.Download()
+
+		if err != nil {
+			b.SendLog(err.Error())
+			return err
+		}
+
+		filename, err := WriteTempFile(b, audioData, "audio")
+
+		if err != nil {
+			b.SendLog(err.Error())
+			return err
+		}
+
+		message := b.DCContext.NewMessage(deltachat.DC_MSG_AUDIO)
+		message.SetText(fmt.Sprintf("%s:", senderName))
+		message.SetFile(filename, m.Type)
+
+		b.DCContext.SendMessage(DCID, message)
+
+		return b.MessageTracker.MarkSent(&m.Info.Id)
+	}
+}
+
+func MakeVideoMessageAction(b *BridgeContext, m whatsapp.VideoMessage) MessageAction {
+	return func() error {
+		if b.MessageWasSent(m.Info.Id) {
+			return nil
+		}
+
+		JID := m.Info.RemoteJid
+		DCID, err := b.GetOrCreateDCIDForJID(JID)
+
+		if err != nil {
+			b.SendLog(err.Error())
+			return err
+		}
+
+		senderName := DetermineSenderName(b, m.Info)
+
+		videoData, err := m.Download()
+
+		if err != nil {
+			b.SendLog(err.Error())
+			return err
+		}
+
+		filename, err := WriteTempFile(b, videoData, "vid")
+
+		if err != nil {
+			b.SendLog(err.Error())
+			return err
+		}
+
+		message := b.DCContext.NewMessage(deltachat.DC_MSG_VIDEO)
+		message.SetText(fmt.Sprintf("%s:", senderName))
+		message.SetFile(filename, m.Type)
+
+		b.DCContext.SendMessage(DCID, message)
+
+		return b.MessageTracker.MarkSent(&m.Info.Id)
+	}
+}
+
+func MakeContactMessageAction(b *BridgeContext, m whatsapp.ContactMessage) MessageAction {
+	return func() error {
+		if b.MessageWasSent(m.Info.Id) {
+			return nil
+		}
+
+		JID := m.Info.RemoteJid
+		DCID, err := b.GetOrCreateDCIDForJID(JID)
+
+		if err != nil {
+			b.SendLog(err.Error())
+			return err
+		}
+
+		senderName := DetermineSenderName(b, m.Info)
+
+		filename, err := WriteTempFile(b, []byte(m.Vcard), "vcf")
+
+		if err != nil {
+			b.SendLog(err.Error())
+			return err
+		}
+
+		message := b.DCContext.NewMessage(deltachat.DC_MSG_FILE)
+		message.SetText(fmt.Sprintf("%s:", senderName))
+		message.SetFile(filename, mime.TypeByExtension(".vcf"))
+
+		b.DCContext.SendMessage(DCID, message)
+
+		return b.MessageTracker.MarkSent(&m.Info.Id)
+
 	}
 }
 
@@ -111,4 +256,18 @@ func DetermineSenderName(b *BridgeContext, info whatsapp.MessageInfo) string {
 	}
 
 	return senderName
+}
+
+func WriteTempFile(b *BridgeContext, data []byte, template string) (string, error) {
+	tmpFile, err := ioutil.TempFile(
+		b.Config.App.DataFolder+"/tmp",
+		template,
+	)
+
+	if err != nil {
+		b.SendLog(err.Error())
+		return "", err
+	}
+
+	return tmpFile.Name(), ioutil.WriteFile(tmpFile.Name(), data, 0600)
 }
