@@ -252,7 +252,10 @@ func DetermineSenderName(b *BridgeContext, info whatsapp.MessageInfo) string {
 	}
 
 	if info.FromMe == true {
-		return b.DCContext.GetContact(b.DCUserID).GetDisplayName()
+		dcContact := b.DCContext.GetContact(b.DCUserID)
+		defer dcContact.Unref()
+
+		return dcContact.GetDisplayName()
 	}
 
 	contact, ok := b.WhappConn.Store.Contacts[senderName]
