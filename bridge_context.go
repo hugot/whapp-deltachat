@@ -28,6 +28,8 @@ func (b *BridgeContext) GetOrCreateDCIDForJID(JID string) (uint32, error) {
 
 	if ok {
 		chatName = chat.Name
+	} else if sender, ok := b.WhappConn.Store.Contacts[JID]; ok {
+		chatName = sender.Name
 	}
 
 	DCID := b.DCContext.CreateGroupChat(true, chatName)
