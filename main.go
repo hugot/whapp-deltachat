@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"syscall"
 
 	"github.com/hugot/go-deltachat/deltabot"
 	"github.com/hugot/go-deltachat/deltachat"
@@ -97,7 +98,7 @@ func main() {
 	dcClient.On(deltachat.DC_EVENT_INCOMING_MSG, bot.HandleMessage)
 
 	wait := make(chan os.Signal, 1)
-	signal.Notify(wait, os.Interrupt)
+	signal.Notify(wait, os.Interrupt, syscall.SIGTERM)
 
 	for {
 		select {
