@@ -1,0 +1,22 @@
+app:
+  # where whapp-deltachat gets to store it's data
+  data_folder: /var/lib/whapp-deltachat
+  # The address of the deltachat user you want to use the bridge with
+  user: chat@example.com
+
+# Deltachat config section, see dc_set_config documentation for possible keys here:
+# https://c.delta.chat/classdc__context__t.html#aff3b894f6cfca46cab5248fdffdf083d The
+# server_params setting is currently not configurable through here, it is set to use
+# STARTTLS for SMTP and SSL for IMAP by default. Will be made configurable soon.
+deltachat:
+  addr: whapp@example.com
+
+  mail_pw: super_secret_password
+  mail_server: imap.example.com
+  mail_user: whapp@example.com
+  mail_port: 993
+
+  send_pw: super_secret_password
+  send_server: smtp.example.com
+  send_user: whapp@example.com
+  send_port: 587
