@@ -59,3 +59,18 @@ func (b *BridgeContext) MessageWasSent(ID string) bool {
 
 	return sent
 }
+
+func (b *BridgeContext) ShouldMessageBeSent(info whatsapp.MessageInfo) bool {
+	// Skip if the message has already been sent
+	if b.MessageWasSent(info.Id) {
+		return false
+	}
+
+	// send if not from user
+	if !info.FromMe {
+		return true
+	}
+
+	// If from user, only send when it is enabled in the config
+	return b.Config.App.ShowFromMe
+}

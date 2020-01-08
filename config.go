@@ -9,6 +9,7 @@ import (
 type AppConfig struct {
 	DataFolder  string `yaml:"data_folder"`
 	UserAddress string `yaml:"user"`
+	ShowFromMe  bool   `yaml:"show_from_me"`
 }
 
 type Config struct {
