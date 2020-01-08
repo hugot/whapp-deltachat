@@ -1,11 +1,14 @@
 package main
 
 import (
+	"log"
+
 	"github.com/Rhymen/go-whatsapp"
 	"github.com/hugot/go-deltachat/deltachat"
 )
 
 type BridgeContext struct {
+	Config         *Config
 	WhappConn      *whatsapp.Conn
 	DCContext      *deltachat.Context
 	DB             *Database
@@ -42,4 +45,15 @@ func (b *BridgeContext) GetOrCreateDCIDForJID(JID string) (uint32, error) {
 
 func (b *BridgeContext) SendLog(logString string) {
 	b.DCContext.SendTextMessage(b.DCUserChatID, logString)
+}
+
+func (b *BridgeContext) MessageWasSent(ID string) bool {
+	sent, err := b.MessageTracker.WasSent(ID)
+
+	if err != nil {
+		log.Println(err)
+		b.SendLog(err.Error())
+	}
+
+	return sent
 }

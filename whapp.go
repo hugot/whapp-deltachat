@@ -66,7 +66,7 @@ func WhappQrLogin(
 	go func() {
 		qrCode := <-qrChan
 
-		tmpFile, err := ioutil.TempFile(storageDir+"/tmp", "qr")
+		tmpFile, err := ioutil.TempFile(storageDir+"/tmp", "XXXXXXX-qr")
 
 		if err != nil {
 			log.Fatal(err)
@@ -80,9 +80,7 @@ func WhappQrLogin(
 
 		message := ctx.DCContext.NewMessage(deltachat.DC_MSG_IMAGE)
 
-		log.Println("MIME: " + mime.TypeByExtension(".png"))
-
-		message.SetFile(tmpFile.Name(), "image/png")
+		message.SetFile(tmpFile.Name(), mime.TypeByExtension(".png"))
 
 		message.SetText("Scan this QR code from whatsapp")
 

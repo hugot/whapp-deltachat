@@ -167,7 +167,7 @@ func (d *Database) WhappMessageWasSent(ID string) (bool, error) {
 
 		rawWasSent := bucket.Get([]byte(ID))
 
-		if len(rawWasSent) > 0 && uint8(rawWasSent[0]) == uint8(1) {
+		if len(rawWasSent) > 0 {
 			wasSent = true
 		}
 

@@ -23,3 +23,12 @@ func (h *WhappHandler) HandleTextMessage(m whatsapp.TextMessage) {
 
 	h.MessageWorker.HandleMessage(handler)
 }
+
+func (h *WhappHandler) HandleImageMessage(m whatsapp.ImageMessage) {
+	handler := MessageHandler{
+		Jid:    m.Info.RemoteJid,
+		Action: MakeImageMessageAction(h.BridgeContext, m),
+	}
+
+	h.MessageWorker.HandleMessage(handler)
+}

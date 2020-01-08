@@ -47,6 +47,7 @@ func main() {
 	}
 
 	bridgeCtx := &BridgeContext{
+		Config:         config,
 		DB:             db,
 		MessageTracker: messageTracker,
 	}
