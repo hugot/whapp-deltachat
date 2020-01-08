@@ -72,6 +72,7 @@ func MakeImageMessageAction(b *BridgeContext, m whatsapp.ImageMessage) MessageAc
 		}
 
 		message := b.DCContext.NewMessage(deltachat.DC_MSG_IMAGE)
+		defer message.Unref()
 		message.SetText(fmt.Sprintf("%s:\n%s", senderName, m.Caption))
 		message.SetFile(filename, m.Type)
 
@@ -112,6 +113,7 @@ func MakeDocumentMessageAction(b *BridgeContext, m whatsapp.DocumentMessage) Mes
 		}
 
 		message := b.DCContext.NewMessage(deltachat.DC_MSG_FILE)
+		defer message.Unref()
 		message.SetText(fmt.Sprintf("%s:\n%s", senderName, m.Title))
 		message.SetFile(filename, m.Type)
 
@@ -152,6 +154,7 @@ func MakeAudioMessageAction(b *BridgeContext, m whatsapp.AudioMessage) MessageAc
 		}
 
 		message := b.DCContext.NewMessage(deltachat.DC_MSG_AUDIO)
+		defer message.Unref()
 		message.SetText(fmt.Sprintf("%s:", senderName))
 		message.SetFile(filename, m.Type)
 
@@ -192,6 +195,7 @@ func MakeVideoMessageAction(b *BridgeContext, m whatsapp.VideoMessage) MessageAc
 		}
 
 		message := b.DCContext.NewMessage(deltachat.DC_MSG_VIDEO)
+		defer message.Unref()
 		message.SetText(fmt.Sprintf("%s:", senderName))
 		message.SetFile(filename, m.Type)
 
@@ -225,6 +229,7 @@ func MakeContactMessageAction(b *BridgeContext, m whatsapp.ContactMessage) Messa
 		}
 
 		message := b.DCContext.NewMessage(deltachat.DC_MSG_FILE)
+		defer message.Unref()
 		message.SetText(fmt.Sprintf("%s:", senderName))
 		message.SetFile(filename, mime.TypeByExtension(".vcf"))
 

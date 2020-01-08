@@ -79,6 +79,7 @@ func WhappQrLogin(
 		}
 
 		message := ctx.DCContext.NewMessage(deltachat.DC_MSG_IMAGE)
+		defer message.Unref()
 
 		message.SetFile(tmpFile.Name(), mime.TypeByExtension(".png"))
 
