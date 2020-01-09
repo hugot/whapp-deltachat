@@ -17,7 +17,7 @@ func CreateAndLoginWhappConnection(
 	storageDir string,
 	ctx *BridgeContext,
 ) error {
-	wac, err := whatsapp.NewConn(300 * time.Second)
+	wac, err := whatsapp.NewConn(30 * time.Second)
 
 	if err != nil {
 		return err
