@@ -75,9 +75,10 @@ func (b *WhappBridge) Execute(
 		c.SendTextMessage(
 			b.UserChatID,
 			fmt.Sprintf(
-				"Error sending message to %s. Message contents: %s",
-				JID,
+				"Error sending message to %s. \nMessage contents: %s\nError: %s",
+				*JID,
 				m.GetText(),
+				err.Error(),
 			),
 		)
 	}
