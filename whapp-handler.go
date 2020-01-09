@@ -12,7 +12,10 @@ type WhappHandler struct {
 }
 
 func (h *WhappHandler) HandleError(err error) {
-	log.Println("Whatsapp Error: " + err.Error())
+	logString := "Whatsapp Error: " + err.Error()
+
+	log.Println(logString)
+	h.BridgeContext.SendLog(logString)
 }
 
 func (h *WhappHandler) HandleTextMessage(m whatsapp.TextMessage) {
