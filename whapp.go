@@ -27,34 +27,46 @@ func CreateAndLoginWhappConnection(
 
 	var session whatsapp.Session
 
-	sessionFile := storageDir + "/whapp-session.json"
+	sessionFile := WhappSessionFileName(storageDir)
 	if _, err := os.Stat(sessionFile); os.IsNotExist(err) {
 		session, err = WhappQrLogin(storageDir, ctx)
 
 		if err != nil {
 			return err
 		}
-	} else {
-		session = whatsapp.Session{}
 
-		sessionJson, err := ioutil.ReadFile(sessionFile)
-
-		err = json.Unmarshal(sessionJson, &session)
-
-		if err != nil {
-			return err
-		}
-
-		session, err = wac.RestoreWithSession(session)
-
-		if err != nil {
-			return err
-		}
+		return StoreWhappSession(session, storageDir)
 	}
 
-	err = StoreWhappSession(session, storageDir)
+	return RestoreWhappSessionFromStorage(storageDir, wac)
+}
 
-	return err
+func RestoreWhappSessionFromStorage(storageDir string, wac *whatsapp.Conn) error {
+	storedSession, err := GetStoredWhappSession(storageDir)
+	if err != nil {
+		return err
+	}
+
+	session, err := wac.RestoreWithSession(*storedSession)
+	if err != nil {
+		return err
+	}
+
+	return StoreWhappSession(session, storageDir)
+}
+
+func WhappSessionFileName(storageDir string) string {
+	return storageDir + "/whapp-session.json"
+}
+
+func GetStoredWhappSession(storageDir string) (*whatsapp.Session, error) {
+	session := &whatsapp.Session{}
+
+	sessionJson, err := ioutil.ReadFile(WhappSessionFileName(storageDir))
+
+	err = json.Unmarshal(sessionJson, session)
+
+	return session, err
 }
 
 func WhappQrLogin(

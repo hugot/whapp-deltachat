@@ -12,6 +12,20 @@ type WhappHandler struct {
 }
 
 func (h *WhappHandler) HandleError(err error) {
+	if _, connectionFailed := err.(*whatsapp.ErrConnectionFailed); connectionFailed {
+		err = RestoreWhappSessionFromStorage(
+			h.BridgeContext.Config.App.DataFolder,
+			h.BridgeContext.WhappConn,
+		)
+
+		if err != nil {
+			logString := "Failed to restore whatsapp connection: " + err.Error()
+			log.Println(logString)
+			h.BridgeContext.SendLog(logString)
+			return
+		}
+	}
+
 	logString := "Whatsapp Error: " + err.Error()
 
 	log.Println(logString)
