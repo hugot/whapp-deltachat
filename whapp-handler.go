@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/Rhymen/go-whatsapp"
@@ -26,8 +27,10 @@ func (h *WhappHandler) HandleError(err error) {
 		}
 	}
 
-	logString := "Whatsapp Error: " + err.Error()
+	typeLogString := fmt.Sprintf("Whatsapp Error of type: %T", err)
+	log.Println(typeLogString)
 
+	logString := "Whatsapp Error: " + err.Error()
 	log.Println(logString)
 
 	// Invalid ws data seems to be pretty common, let's not bore the user with that.xg
