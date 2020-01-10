@@ -29,7 +29,11 @@ func (h *WhappHandler) HandleError(err error) {
 	logString := "Whatsapp Error: " + err.Error()
 
 	log.Println(logString)
-	h.BridgeContext.SendLog(logString)
+
+	// Invalid ws data seems to be pretty common, let's not bore the user with that.xg
+	if err.Error() != "error processing data: "+whatsapp.ErrInvalidWsData.Error() {
+		h.BridgeContext.SendLog(logString)
+	}
 }
 
 func (h *WhappHandler) HandleTextMessage(m whatsapp.TextMessage) {
