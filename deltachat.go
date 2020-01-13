@@ -60,7 +60,7 @@ func BootstrapDcClientFromConfig(config Config, ctx *BridgeContext) (*deltachat.
 	// crypto setup has changed if it has
 	DCCtx.SendTextMessage(
 		DCCtx.CreateChatByContactID(dcUserID),
-		"Hi, Whapp-Deltachat is initiallizing",
+		"Hi, Whapp-Deltachat is initializing",
 	)
 
 	userChatIDRaw := ctx.DB.Get([]byte("user-chat-id"))
