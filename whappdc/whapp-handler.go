@@ -1,14 +1,15 @@
-package main
+package whappdc
 
 import (
 	"fmt"
 	"log"
 
 	"github.com/Rhymen/go-whatsapp"
+	core "github.com/hugot/whapp-deltachat/whappdc-core"
 )
 
 type WhappHandler struct {
-	BridgeContext *BridgeContext
+	BridgeContext *core.BridgeContext
 	MessageWorker *MessageWorker
 }
 
@@ -19,7 +20,7 @@ func (h *WhappHandler) HandleError(err error) {
 	}
 
 	if _, connectionFailed := err.(*whatsapp.ErrConnectionFailed); connectionFailed {
-		err = RestoreWhappSessionFromStorage(
+		err = core.RestoreWhappSessionFromStorage(
 			h.BridgeContext.Config.App.DataFolder,
 			h.BridgeContext.WhappConn,
 		)

@@ -10,6 +10,8 @@ import (
 	"github.com/hugot/go-deltachat/deltabot"
 	"github.com/hugot/go-deltachat/deltachat"
 	"github.com/hugot/whapp-deltachat/botcommands"
+	"github.com/hugot/whapp-deltachat/whappdc"
+	core "github.com/hugot/whapp-deltachat/whappdc-core"
 )
 
 func main() {
@@ -22,7 +24,7 @@ func main() {
 
 	configPath := os.Args[1]
 
-	config, err := ConfigFromFile(configPath)
+	config, err := core.ConfigFromFile(configPath)
 
 	if err != nil {
 		log.Fatal(err)
@@ -31,13 +33,11 @@ func main() {
 	ensureDirectoryOrDie(config.App.DataFolder)
 	ensureDirectoryOrDie(config.App.DataFolder + "/tmp")
 
-	db := &Database{
-		dbPath: config.App.DataFolder + "/app.db",
-	}
+	db := core.NewDatabase(config.App.DataFolder + "/app.db")
 
 	err = db.Init()
 
-	messageTracker := &MessageTracker{
+	messageTracker := &core.MessageTracker{
 		DB: db,
 	}
 
@@ -47,13 +47,13 @@ func main() {
 		log.Fatal(err)
 	}
 
-	bridgeCtx := &BridgeContext{
+	bridgeCtx := &core.BridgeContext{
 		Config:         config,
 		DB:             db,
 		MessageTracker: messageTracker,
 	}
 
-	dcClient, err := BootstrapDcClientFromConfig(*config, bridgeCtx)
+	dcClient, err := core.BootstrapDcClientFromConfig(*config, bridgeCtx)
 
 	bridgeCtx.SendLog("Whapp-Deltachat started.")
 
@@ -66,7 +66,7 @@ func main() {
 	defer dcClient.Close()
 
 	for i := 0; i < 10; i++ {
-		err = CreateAndLoginWhappConnection(
+		err = core.CreateAndLoginWhappConnection(
 			config.App.DataFolder,
 			bridgeCtx,
 		)
@@ -80,10 +80,10 @@ func main() {
 		log.Fatal(err)
 	}
 
-	messageWorker := NewMessageWorker()
+	messageWorker := whappdc.NewMessageWorker()
 	messageWorker.Start()
 
-	bridgeCtx.WhappConn.AddHandler(&WhappHandler{
+	bridgeCtx.WhappConn.AddHandler(&whappdc.WhappHandler{
 		BridgeContext: bridgeCtx,
 		MessageWorker: messageWorker,
 	})

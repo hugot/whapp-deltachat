@@ -1,4 +1,4 @@
-package main
+package whappdc
 
 import (
 	"fmt"
@@ -7,6 +7,7 @@ import (
 
 	"github.com/Rhymen/go-whatsapp"
 	"github.com/hugot/go-deltachat/deltachat"
+	core "github.com/hugot/whapp-deltachat/whappdc-core"
 )
 
 type MessageHandler struct {
@@ -16,7 +17,7 @@ type MessageHandler struct {
 
 type MessageAction func() error
 
-func MakeTextMessageAction(b *BridgeContext, m whatsapp.TextMessage) MessageAction {
+func MakeTextMessageAction(b *core.BridgeContext, m whatsapp.TextMessage) MessageAction {
 	return func() error {
 		if !b.ShouldMessageBeSent(m.Info) {
 			return nil
@@ -41,7 +42,7 @@ func MakeTextMessageAction(b *BridgeContext, m whatsapp.TextMessage) MessageActi
 	}
 }
 
-func MakeImageMessageAction(b *BridgeContext, m whatsapp.ImageMessage) MessageAction {
+func MakeImageMessageAction(b *core.BridgeContext, m whatsapp.ImageMessage) MessageAction {
 	return func() error {
 		if !b.ShouldMessageBeSent(m.Info) {
 			return nil
@@ -82,7 +83,7 @@ func MakeImageMessageAction(b *BridgeContext, m whatsapp.ImageMessage) MessageAc
 	}
 }
 
-func MakeDocumentMessageAction(b *BridgeContext, m whatsapp.DocumentMessage) MessageAction {
+func MakeDocumentMessageAction(b *core.BridgeContext, m whatsapp.DocumentMessage) MessageAction {
 	return func() error {
 		if !b.ShouldMessageBeSent(m.Info) {
 			return nil
@@ -123,7 +124,7 @@ func MakeDocumentMessageAction(b *BridgeContext, m whatsapp.DocumentMessage) Mes
 	}
 }
 
-func MakeAudioMessageAction(b *BridgeContext, m whatsapp.AudioMessage) MessageAction {
+func MakeAudioMessageAction(b *core.BridgeContext, m whatsapp.AudioMessage) MessageAction {
 	return func() error {
 		if !b.ShouldMessageBeSent(m.Info) {
 			return nil
@@ -164,7 +165,7 @@ func MakeAudioMessageAction(b *BridgeContext, m whatsapp.AudioMessage) MessageAc
 	}
 }
 
-func MakeVideoMessageAction(b *BridgeContext, m whatsapp.VideoMessage) MessageAction {
+func MakeVideoMessageAction(b *core.BridgeContext, m whatsapp.VideoMessage) MessageAction {
 	return func() error {
 		if !b.ShouldMessageBeSent(m.Info) {
 			return nil
@@ -205,7 +206,7 @@ func MakeVideoMessageAction(b *BridgeContext, m whatsapp.VideoMessage) MessageAc
 	}
 }
 
-func MakeContactMessageAction(b *BridgeContext, m whatsapp.ContactMessage) MessageAction {
+func MakeContactMessageAction(b *core.BridgeContext, m whatsapp.ContactMessage) MessageAction {
 	return func() error {
 		if !b.ShouldMessageBeSent(m.Info) {
 			return nil
@@ -243,7 +244,7 @@ func MakeContactMessageAction(b *BridgeContext, m whatsapp.ContactMessage) Messa
 ////
 // Helpers
 
-func DetermineSenderName(b *BridgeContext, info whatsapp.MessageInfo) string {
+func DetermineSenderName(b *core.BridgeContext, info whatsapp.MessageInfo) string {
 	senderName := info.Source.GetParticipant()
 
 	// No participant probably means that this isn't a group chat.
@@ -266,7 +267,7 @@ func DetermineSenderName(b *BridgeContext, info whatsapp.MessageInfo) string {
 	return senderName
 }
 
-func WriteTempFile(b *BridgeContext, data []byte, template string) (string, error) {
+func WriteTempFile(b *core.BridgeContext, data []byte, template string) (string, error) {
 	tmpFile, err := ioutil.TempFile(
 		b.Config.App.DataFolder+"/tmp",
 		template,

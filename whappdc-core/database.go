@@ -1,10 +1,16 @@
-package main
+package core
 
 import (
 	"encoding/binary"
 
 	"go.etcd.io/bbolt"
 )
+
+func NewDatabase(dbPath string) *Database {
+	return &Database{
+		dbPath: dbPath,
+	}
+}
 
 type Database struct {
 	db     *bbolt.DB
