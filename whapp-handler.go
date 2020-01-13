@@ -13,6 +13,11 @@ type WhappHandler struct {
 }
 
 func (h *WhappHandler) HandleError(err error) {
+	// Apparently, the error passed to this function can sometimes be nil.
+	if err == nil {
+		return
+	}
+
 	if _, connectionFailed := err.(*whatsapp.ErrConnectionFailed); connectionFailed {
 		err = RestoreWhappSessionFromStorage(
 			h.BridgeContext.Config.App.DataFolder,
