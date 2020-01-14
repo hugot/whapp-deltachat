@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/hugot/go-deltachat/deltabot"
 	"github.com/hugot/go-deltachat/deltachat"
@@ -40,6 +41,7 @@ func main() {
 	messageTracker := &core.MessageTracker{
 		DB: db,
 	}
+	messageTracker.FlushWithInterval(15 * time.Minute)
 
 	defer messageTracker.Flush()
 

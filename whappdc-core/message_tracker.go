@@ -1,7 +1,9 @@
 package core
 
 import (
+	"log"
 	"sync"
+	"time"
 )
 
 // MessageTracker will keep track of encountered whatsapp messages to prevent sending them
@@ -52,4 +54,17 @@ func (t *MessageTracker) Flush() error {
 
 func (t *MessageTracker) WasSent(ID string) (bool, error) {
 	return t.DB.WhappMessageWasSent(ID)
+}
+
+func (t *MessageTracker) FlushWithInterval(interval time.Duration) {
+	go func() {
+		for {
+			time.Sleep(interval)
+			err := t.Flush()
+
+			if err != nil {
+				log.Println(err)
+			}
+		}
+	}()
 }
