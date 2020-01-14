@@ -85,6 +85,7 @@ func BootstrapDcClientFromConfig(config Config, ctx *BridgeContext) (*deltachat.
 	ctx.DCUserID = dcUserID
 	ctx.DCUserChatID = userChatID
 	ctx.DCContext = DCCtx
+	ctx.DCClient = dcClient
 
 	return dcClient, err
 }

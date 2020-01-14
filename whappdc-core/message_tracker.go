@@ -6,6 +6,16 @@ import (
 	"time"
 )
 
+func NewMessageTracker(DB *Database, flushInterval time.Duration) *MessageTracker {
+	tracker := &MessageTracker{
+		DB: DB,
+	}
+
+	tracker.FlushWithInterval(flushInterval)
+
+	return tracker
+}
+
 // MessageTracker will keep track of encountered whatsapp messages to prevent sending them
 // twice. It's storage is buffered to prevent continuous locks on the database. This means
 // that calling WasSent immediately after calling MarkSent will most likely not return an

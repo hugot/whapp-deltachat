@@ -13,6 +13,13 @@ type WhappHandler struct {
 	MessageWorker *MessageWorker
 }
 
+func NewWhappHandler(bridgeCtx *core.BridgeContext, messageWorker *MessageWorker) *WhappHandler {
+	return &WhappHandler{
+		BridgeContext: bridgeCtx,
+		MessageWorker: messageWorker,
+	}
+}
+
 func (h *WhappHandler) HandleError(err error) {
 	// If connection to the whapp servers failed for some reason, just retry.
 	if _, connectionFailed := err.(*whatsapp.ErrConnectionFailed); connectionFailed {

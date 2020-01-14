@@ -6,38 +6,30 @@ import (
 
 	"github.com/Rhymen/go-whatsapp"
 	"github.com/hugot/go-deltachat/deltachat"
+	core "github.com/hugot/whapp-deltachat/whappdc-core"
 )
 
-type Database interface {
-	GetWhappJIDForDCID(DCID uint32) (*string, error)
-}
-
-func NewWhappBridge(
-	wac *whatsapp.Conn,
-	db Database,
-	UserChatID uint32,
-) *WhappBridge {
+func NewWhappBridge(bridgeContext *core.BridgeContext) *WhappBridge {
 	return &WhappBridge{
-		wac:        wac,
-		db:         db,
-		UserChatID: UserChatID,
+		bridgeCtx: bridgeContext,
 	}
 }
 
 type WhappBridge struct {
-	wac        *whatsapp.Conn
-	db         Database
-	UserChatID uint32
+	bridgeCtx *core.BridgeContext
 }
 
 func (b *WhappBridge) Accepts(c *deltachat.Chat, m *deltachat.Message) bool {
 	chatID := c.GetID()
 
-	chatJID, err := b.db.GetWhappJIDForDCID(chatID)
+	chatJID, err := b.bridgeCtx.DB.GetWhappJIDForDCID(chatID)
 
 	if err != nil {
-		// The database is failing, time to die :(
-		log.Fatal(err)
+		// The database is failing, very much an edge case.
+		log.Println(err)
+		b.bridgeCtx.SendLog(err.Error())
+
+		return false
 	}
 
 	return chatJID != nil
@@ -48,18 +40,18 @@ func (b *WhappBridge) Execute(
 	chat *deltachat.Chat,
 	m *deltachat.Message,
 ) {
-	JID, err := b.db.GetWhappJIDForDCID(chat.GetID())
+	JID, err := b.bridgeCtx.DB.GetWhappJIDForDCID(chat.GetID())
 
 	if err != nil {
-		c.SendTextMessage(
-			b.UserChatID,
+		log.Println(err)
+		b.bridgeCtx.SendLog(
 			fmt.Sprintf(
-				"Whapp bridge dying: %s",
+				"Database error in Whapp bridge: %s",
 				err.Error(),
 			),
 		)
 
-		log.Fatal(err)
+		return
 	}
 
 	text := whatsapp.TextMessage{
@@ -69,11 +61,10 @@ func (b *WhappBridge) Execute(
 		Text: m.GetText(),
 	}
 
-	_, err = b.wac.Send(text)
+	_, err = b.bridgeCtx.WhappConn.Send(text)
 
 	if err != nil {
-		c.SendTextMessage(
-			b.UserChatID,
+		b.bridgeCtx.SendLog(
 			fmt.Sprintf(
 				"Error sending message to %s. \nMessage contents: %s\nError: %s",
 				*JID,

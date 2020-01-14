@@ -66,6 +66,10 @@ func (d *Database) Init() error {
 	return nil
 }
 
+func (d *Database) Close() error {
+	return d.db.Close()
+}
+
 func (d *Database) GetDCIDForWhappJID(JID string) (*uint32, error) {
 	var DCID *uint32
 
