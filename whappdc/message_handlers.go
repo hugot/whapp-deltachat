@@ -206,6 +206,7 @@ func MakeVideoMessageAction(b *core.BridgeContext, m whatsapp.VideoMessage) Mess
 	}
 }
 
+// 2020-01-14 10:34 TODO: Find out why this doesn't work.
 func MakeContactMessageAction(b *core.BridgeContext, m whatsapp.ContactMessage) MessageAction {
 	return func() error {
 		if !b.ShouldMessageBeSent(m.Info) {
