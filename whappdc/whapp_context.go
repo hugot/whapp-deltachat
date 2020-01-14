@@ -91,3 +91,15 @@ func (w *WhappContext) ShouldMessageBeSent(info whatsapp.MessageInfo) bool {
 func (w *WhappContext) DCCtx() *deltachat.Context {
 	return w.BridgeCtx.DCContext
 }
+
+// Helper to easily mark failed media downloads as sent anyways.
+func (w *WhappContext) markSentIf404Download(ID *string, err error) {
+	if err == whatsapp.ErrMediaDownloadFailedWith404 {
+		err := w.MessageTracker.MarkSent(ID)
+
+		if err != nil {
+			log.Println(err)
+			w.BridgeCtx.SendLog(err.Error())
+		}
+	}
+}

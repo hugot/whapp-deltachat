@@ -9,6 +9,7 @@ import (
 	core "github.com/hugot/whapp-deltachat/whappdc-core"
 )
 
+// WhappHandler implements go-whaptsapp.Handler
 type WhappHandler struct {
 	WhappCtx      *WhappContext
 	MessageWorker *MessageWorker

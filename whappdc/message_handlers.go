@@ -62,6 +62,8 @@ func MakeImageMessageAction(w *WhappContext, m whatsapp.ImageMessage) MessageAct
 
 		if err != nil {
 			w.BridgeCtx.SendLog(err.Error())
+			w.markSentIf404Download(&m.Info.Id, err)
+
 			return err
 		}
 
@@ -103,6 +105,8 @@ func MakeDocumentMessageAction(w *WhappContext, m whatsapp.DocumentMessage) Mess
 
 		if err != nil {
 			w.BridgeCtx.SendLog(err.Error())
+			w.markSentIf404Download(&m.Info.Id, err)
+
 			return err
 		}
 
@@ -144,6 +148,8 @@ func MakeAudioMessageAction(w *WhappContext, m whatsapp.AudioMessage) MessageAct
 
 		if err != nil {
 			w.BridgeCtx.SendLog(err.Error())
+			w.markSentIf404Download(&m.Info.Id, err)
+
 			return err
 		}
 
@@ -185,6 +191,8 @@ func MakeVideoMessageAction(w *WhappContext, m whatsapp.VideoMessage) MessageAct
 
 		if err != nil {
 			w.BridgeCtx.SendLog(err.Error())
+			w.markSentIf404Download(&m.Info.Id, err)
+
 			return err
 		}
 
