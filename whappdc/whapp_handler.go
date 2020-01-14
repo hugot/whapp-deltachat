@@ -14,11 +14,21 @@ type WhappHandler struct {
 }
 
 func (h *WhappHandler) HandleError(err error) {
-	// Apparently, the error passed to this function can sometimes be nil.
+	// Err might be nil.
 	if err == nil {
 		return
 	}
 
+	// there is a weird edge case in which calling err.Error() causes a nil pointer
+	// dereference in this function. This is probably a bug in rhymen/go-whatsapp. Let's
+	// keep this here to recover from panics.
+	defer func() {
+		if r := recover(); r != nil {
+			log.Println("Recovered from panic in *WhappHandler.HandleError")
+		}
+	}()
+
+	// If connection to the whapp servers failed for some reason, just retry.
 	if _, connectionFailed := err.(*whatsapp.ErrConnectionFailed); connectionFailed {
 		err = core.RestoreWhappSessionFromStorage(
 			h.BridgeContext.Config.App.DataFolder,
@@ -36,6 +46,8 @@ func (h *WhappHandler) HandleError(err error) {
 	typeLogString := fmt.Sprintf("Whatsapp Error of type: %T", err)
 	log.Println(typeLogString)
 
+	// Calling err.Error() here may cause a nil pointer dereference panic. See defer
+	// statement above.
 	logString := "Whatsapp Error: " + err.Error()
 	log.Println(logString)
 
