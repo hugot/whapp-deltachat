@@ -10,15 +10,16 @@ import (
 )
 
 type Bridge struct {
-	Ctx *core.BridgeContext
+	Ctx          *core.BridgeContext
+	whappHandler *whappdc.WhappHandler
 }
 
 func (b *Bridge) Init(config *core.Config) error {
-	messageWorker := whappdc.NewMessageWorker()
-	ctx := core.NewBridgeContext(config, 15*time.Minute)
+	ctx := core.NewBridgeContext(config)
+	whappHandler := whappdc.NewWhappHandler(ctx, 15*time.Minute)
 
 	err := ctx.Init(
-		whappdc.NewWhappHandler(ctx, messageWorker),
+		whappHandler,
 		[]deltabot.Command{
 			&botcommands.Echo{},
 			botcommands.NewWhappBridge(ctx),
@@ -29,13 +30,20 @@ func (b *Bridge) Init(config *core.Config) error {
 		return err
 	}
 
-	messageWorker.Start()
+	whappHandler.Start()
 
+	b.whappHandler = whappHandler
 	b.Ctx = ctx
 
 	return nil
 }
 
 func (b *Bridge) Close() error {
+	err := b.whappHandler.Stop()
+
+	if err != nil {
+		return err
+	}
+
 	return b.Ctx.Close()
 }

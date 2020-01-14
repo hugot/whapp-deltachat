@@ -17,228 +17,227 @@ type MessageHandler struct {
 
 type MessageAction func() error
 
-func MakeTextMessageAction(b *core.BridgeContext, m whatsapp.TextMessage) MessageAction {
+func MakeTextMessageAction(w *WhappContext, m whatsapp.TextMessage) MessageAction {
 	return func() error {
-		if !b.ShouldMessageBeSent(m.Info) {
+		if !w.ShouldMessageBeSent(m.Info) {
 			return nil
 		}
 
 		JID := m.Info.RemoteJid
-		DCID, err := b.GetOrCreateDCIDForJID(JID)
+		DCID, err := w.GetOrCreateDCIDForJID(JID)
 
 		if err != nil {
-			b.SendLog(err.Error())
+			w.BridgeCtx.SendLog(err.Error())
 			return err
 		}
 
-		senderName := DetermineSenderName(b, m.Info)
+		senderName := DetermineSenderName(w.BridgeCtx, m.Info)
 
-		b.DCContext.SendTextMessage(
+		w.DCCtx().SendTextMessage(
 			DCID,
 			fmt.Sprintf("%s:\n%s", senderName, m.Text),
 		)
 
-		return b.MessageTracker.MarkSent(&m.Info.Id)
+		return w.MessageTracker.MarkSent(&m.Info.Id)
 	}
 }
 
-func MakeImageMessageAction(b *core.BridgeContext, m whatsapp.ImageMessage) MessageAction {
+func MakeImageMessageAction(w *WhappContext, m whatsapp.ImageMessage) MessageAction {
 	return func() error {
-		if !b.ShouldMessageBeSent(m.Info) {
+		if !w.ShouldMessageBeSent(m.Info) {
 			return nil
 		}
 
 		JID := m.Info.RemoteJid
-		DCID, err := b.GetOrCreateDCIDForJID(JID)
+		DCID, err := w.GetOrCreateDCIDForJID(JID)
 
 		if err != nil {
-			b.SendLog(err.Error())
+			w.BridgeCtx.SendLog(err.Error())
 			return err
 		}
 
-		senderName := DetermineSenderName(b, m.Info)
+		senderName := DetermineSenderName(w.BridgeCtx, m.Info)
 
 		imageData, err := m.Download()
 
 		if err != nil {
-			b.SendLog(err.Error())
+			w.BridgeCtx.SendLog(err.Error())
 			return err
 		}
 
-		filename, err := WriteTempFile(b, imageData, "img")
+		filename, err := WriteTempFile(w.BridgeCtx, imageData, "img")
 
 		if err != nil {
-			b.SendLog(err.Error())
+			w.BridgeCtx.SendLog(err.Error())
 			return err
 		}
 
-		message := b.DCContext.NewMessage(deltachat.DC_MSG_IMAGE)
+		message := w.DCCtx().NewMessage(deltachat.DC_MSG_IMAGE)
 		defer message.Unref()
 		message.SetText(fmt.Sprintf("%s:\n%s", senderName, m.Caption))
 		message.SetFile(filename, m.Type)
 
-		b.DCContext.SendMessage(DCID, message)
+		w.DCCtx().SendMessage(DCID, message)
 
-		return b.MessageTracker.MarkSent(&m.Info.Id)
+		return w.MessageTracker.MarkSent(&m.Info.Id)
 	}
 }
 
-func MakeDocumentMessageAction(b *core.BridgeContext, m whatsapp.DocumentMessage) MessageAction {
+func MakeDocumentMessageAction(w *WhappContext, m whatsapp.DocumentMessage) MessageAction {
 	return func() error {
-		if !b.ShouldMessageBeSent(m.Info) {
+		if !w.ShouldMessageBeSent(m.Info) {
 			return nil
 		}
 
 		JID := m.Info.RemoteJid
-		DCID, err := b.GetOrCreateDCIDForJID(JID)
+		DCID, err := w.GetOrCreateDCIDForJID(JID)
 
 		if err != nil {
-			b.SendLog(err.Error())
+			w.BridgeCtx.SendLog(err.Error())
 			return err
 		}
 
-		senderName := DetermineSenderName(b, m.Info)
+		senderName := DetermineSenderName(w.BridgeCtx, m.Info)
 
 		documentData, err := m.Download()
 
 		if err != nil {
-			b.SendLog(err.Error())
+			w.BridgeCtx.SendLog(err.Error())
 			return err
 		}
 
-		filename, err := WriteTempFile(b, documentData, "doc")
+		filename, err := WriteTempFile(w.BridgeCtx, documentData, "doc")
 
 		if err != nil {
-			b.SendLog(err.Error())
+			w.BridgeCtx.SendLog(err.Error())
 			return err
 		}
 
-		message := b.DCContext.NewMessage(deltachat.DC_MSG_FILE)
+		message := w.DCCtx().NewMessage(deltachat.DC_MSG_FILE)
 		defer message.Unref()
 		message.SetText(fmt.Sprintf("%s:\n%s", senderName, m.Title))
 		message.SetFile(filename, m.Type)
 
-		b.DCContext.SendMessage(DCID, message)
+		w.DCCtx().SendMessage(DCID, message)
 
-		return b.MessageTracker.MarkSent(&m.Info.Id)
+		return w.MessageTracker.MarkSent(&m.Info.Id)
 	}
 }
 
-func MakeAudioMessageAction(b *core.BridgeContext, m whatsapp.AudioMessage) MessageAction {
+func MakeAudioMessageAction(w *WhappContext, m whatsapp.AudioMessage) MessageAction {
 	return func() error {
-		if !b.ShouldMessageBeSent(m.Info) {
+		if !w.ShouldMessageBeSent(m.Info) {
 			return nil
 		}
 
 		JID := m.Info.RemoteJid
-		DCID, err := b.GetOrCreateDCIDForJID(JID)
+		DCID, err := w.GetOrCreateDCIDForJID(JID)
 
 		if err != nil {
-			b.SendLog(err.Error())
+			w.BridgeCtx.SendLog(err.Error())
 			return err
 		}
 
-		senderName := DetermineSenderName(b, m.Info)
+		senderName := DetermineSenderName(w.BridgeCtx, m.Info)
 
 		audioData, err := m.Download()
 
 		if err != nil {
-			b.SendLog(err.Error())
+			w.BridgeCtx.SendLog(err.Error())
 			return err
 		}
 
-		filename, err := WriteTempFile(b, audioData, "audio")
+		filename, err := WriteTempFile(w.BridgeCtx, audioData, "audio")
 
 		if err != nil {
-			b.SendLog(err.Error())
+			w.BridgeCtx.SendLog(err.Error())
 			return err
 		}
 
-		message := b.DCContext.NewMessage(deltachat.DC_MSG_AUDIO)
+		message := w.DCCtx().NewMessage(deltachat.DC_MSG_AUDIO)
 		defer message.Unref()
 		message.SetText(fmt.Sprintf("%s:", senderName))
 		message.SetFile(filename, m.Type)
 
-		b.DCContext.SendMessage(DCID, message)
+		w.DCCtx().SendMessage(DCID, message)
 
-		return b.MessageTracker.MarkSent(&m.Info.Id)
+		return w.MessageTracker.MarkSent(&m.Info.Id)
 	}
 }
 
-func MakeVideoMessageAction(b *core.BridgeContext, m whatsapp.VideoMessage) MessageAction {
+func MakeVideoMessageAction(w *WhappContext, m whatsapp.VideoMessage) MessageAction {
 	return func() error {
-		if !b.ShouldMessageBeSent(m.Info) {
+		if !w.ShouldMessageBeSent(m.Info) {
 			return nil
 		}
 
 		JID := m.Info.RemoteJid
-		DCID, err := b.GetOrCreateDCIDForJID(JID)
+		DCID, err := w.GetOrCreateDCIDForJID(JID)
 
 		if err != nil {
-			b.SendLog(err.Error())
+			w.BridgeCtx.SendLog(err.Error())
 			return err
 		}
 
-		senderName := DetermineSenderName(b, m.Info)
+		senderName := DetermineSenderName(w.BridgeCtx, m.Info)
 
 		videoData, err := m.Download()
 
 		if err != nil {
-			b.SendLog(err.Error())
+			w.BridgeCtx.SendLog(err.Error())
 			return err
 		}
 
-		filename, err := WriteTempFile(b, videoData, "vid")
+		filename, err := WriteTempFile(w.BridgeCtx, videoData, "vid")
 
 		if err != nil {
-			b.SendLog(err.Error())
+			w.BridgeCtx.SendLog(err.Error())
 			return err
 		}
 
-		message := b.DCContext.NewMessage(deltachat.DC_MSG_VIDEO)
+		message := w.DCCtx().NewMessage(deltachat.DC_MSG_VIDEO)
 		defer message.Unref()
 		message.SetText(fmt.Sprintf("%s:", senderName))
 		message.SetFile(filename, m.Type)
 
-		b.DCContext.SendMessage(DCID, message)
+		w.DCCtx().SendMessage(DCID, message)
 
-		return b.MessageTracker.MarkSent(&m.Info.Id)
+		return w.MessageTracker.MarkSent(&m.Info.Id)
 	}
 }
 
 // 2020-01-14 10:34 TODO: Find out why this doesn't work.
-func MakeContactMessageAction(b *core.BridgeContext, m whatsapp.ContactMessage) MessageAction {
+func MakeContactMessageAction(w *WhappContext, m whatsapp.ContactMessage) MessageAction {
 	return func() error {
-		if !b.ShouldMessageBeSent(m.Info) {
+		if !w.ShouldMessageBeSent(m.Info) {
 			return nil
 		}
 
 		JID := m.Info.RemoteJid
-		DCID, err := b.GetOrCreateDCIDForJID(JID)
+		DCID, err := w.GetOrCreateDCIDForJID(JID)
 
 		if err != nil {
-			b.SendLog(err.Error())
+			w.BridgeCtx.SendLog(err.Error())
 			return err
 		}
 
-		senderName := DetermineSenderName(b, m.Info)
+		senderName := DetermineSenderName(w.BridgeCtx, m.Info)
 
-		filename, err := WriteTempFile(b, []byte(m.Vcard), "vcf")
+		filename, err := WriteTempFile(w.BridgeCtx, []byte(m.Vcard), "vcf")
 
 		if err != nil {
-			b.SendLog(err.Error())
+			w.BridgeCtx.SendLog(err.Error())
 			return err
 		}
 
-		message := b.DCContext.NewMessage(deltachat.DC_MSG_FILE)
+		message := w.DCCtx().NewMessage(deltachat.DC_MSG_FILE)
 		defer message.Unref()
 		message.SetText(fmt.Sprintf("%s:", senderName))
 		message.SetFile(filename, mime.TypeByExtension(".vcf"))
 
-		b.DCContext.SendMessage(DCID, message)
+		w.DCCtx().SendMessage(DCID, message)
 
-		return b.MessageTracker.MarkSent(&m.Info.Id)
-
+		return w.MessageTracker.MarkSent(&m.Info.Id)
 	}
 }
 

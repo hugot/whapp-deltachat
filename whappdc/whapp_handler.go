@@ -3,35 +3,48 @@ package whappdc
 import (
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/Rhymen/go-whatsapp"
 	core "github.com/hugot/whapp-deltachat/whappdc-core"
 )
 
 type WhappHandler struct {
-	BridgeContext *core.BridgeContext
+	WhappCtx      *WhappContext
 	MessageWorker *MessageWorker
 }
 
-func NewWhappHandler(bridgeCtx *core.BridgeContext, messageWorker *MessageWorker) *WhappHandler {
+func NewWhappHandler(
+	bridgeCtx *core.BridgeContext,
+	msgTrackerFlushInterval time.Duration,
+) *WhappHandler {
 	return &WhappHandler{
-		BridgeContext: bridgeCtx,
-		MessageWorker: messageWorker,
+		WhappCtx:      NewWhappContext(bridgeCtx, msgTrackerFlushInterval),
+		MessageWorker: NewMessageWorker(),
 	}
+}
+
+func (h *WhappHandler) Start() {
+	h.MessageWorker.Start()
+}
+
+func (h *WhappHandler) Stop() error {
+	h.MessageWorker.Stop()
+	return h.WhappCtx.Close()
 }
 
 func (h *WhappHandler) HandleError(err error) {
 	// If connection to the whapp servers failed for some reason, just retry.
 	if _, connectionFailed := err.(*whatsapp.ErrConnectionFailed); connectionFailed {
 		err = core.RestoreWhappSessionFromStorage(
-			h.BridgeContext.Config.App.DataFolder,
-			h.BridgeContext.WhappConn,
+			h.WhappCtx.BridgeCtx.Config.App.DataFolder,
+			h.WhappCtx.BridgeCtx.WhappConn,
 		)
 
 		if err != nil {
 			logString := "Failed to restore whatsapp connection: " + err.Error()
 			log.Println(logString)
-			h.BridgeContext.SendLog(logString)
+			h.WhappCtx.BridgeCtx.SendLog(logString)
 		}
 
 		return
@@ -47,14 +60,14 @@ func (h *WhappHandler) HandleError(err error) {
 
 	// Invalid ws data seems to be pretty common, let's not bore the user with that.xg
 	if err.Error() != "error processing data: "+whatsapp.ErrInvalidWsData.Error() {
-		h.BridgeContext.SendLog(logString)
+		h.WhappCtx.BridgeCtx.SendLog(logString)
 	}
 }
 
 func (h *WhappHandler) HandleTextMessage(m whatsapp.TextMessage) {
 	handler := MessageHandler{
 		Jid:    m.Info.RemoteJid,
-		Action: MakeTextMessageAction(h.BridgeContext, m),
+		Action: MakeTextMessageAction(h.WhappCtx, m),
 	}
 
 	h.MessageWorker.HandleMessage(handler)
@@ -63,7 +76,7 @@ func (h *WhappHandler) HandleTextMessage(m whatsapp.TextMessage) {
 func (h *WhappHandler) HandleImageMessage(m whatsapp.ImageMessage) {
 	handler := MessageHandler{
 		Jid:    m.Info.RemoteJid,
-		Action: MakeImageMessageAction(h.BridgeContext, m),
+		Action: MakeImageMessageAction(h.WhappCtx, m),
 	}
 
 	h.MessageWorker.HandleMessage(handler)
@@ -72,7 +85,7 @@ func (h *WhappHandler) HandleImageMessage(m whatsapp.ImageMessage) {
 func (h *WhappHandler) HandleDocumentMessage(m whatsapp.DocumentMessage) {
 	handler := MessageHandler{
 		Jid:    m.Info.RemoteJid,
-		Action: MakeDocumentMessageAction(h.BridgeContext, m),
+		Action: MakeDocumentMessageAction(h.WhappCtx, m),
 	}
 
 	h.MessageWorker.HandleMessage(handler)
@@ -81,7 +94,7 @@ func (h *WhappHandler) HandleDocumentMessage(m whatsapp.DocumentMessage) {
 func (h *WhappHandler) HandleAudioMessage(m whatsapp.AudioMessage) {
 	handler := MessageHandler{
 		Jid:    m.Info.RemoteJid,
-		Action: MakeAudioMessageAction(h.BridgeContext, m),
+		Action: MakeAudioMessageAction(h.WhappCtx, m),
 	}
 
 	h.MessageWorker.HandleMessage(handler)
@@ -90,7 +103,7 @@ func (h *WhappHandler) HandleAudioMessage(m whatsapp.AudioMessage) {
 func (h *WhappHandler) HandleVideoMessage(m whatsapp.VideoMessage) {
 	handler := MessageHandler{
 		Jid:    m.Info.RemoteJid,
-		Action: MakeVideoMessageAction(h.BridgeContext, m),
+		Action: MakeVideoMessageAction(h.WhappCtx, m),
 	}
 
 	h.MessageWorker.HandleMessage(handler)
@@ -99,7 +112,7 @@ func (h *WhappHandler) HandleVideoMessage(m whatsapp.VideoMessage) {
 func (h *WhappHandler) HandleContactMessage(m whatsapp.VideoMessage) {
 	handler := MessageHandler{
 		Jid:    m.Info.RemoteJid,
-		Action: MakeVideoMessageAction(h.BridgeContext, m),
+		Action: MakeVideoMessageAction(h.WhappCtx, m),
 	}
 
 	h.MessageWorker.HandleMessage(handler)

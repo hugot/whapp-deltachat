@@ -1,12 +1,14 @@
-package core
+package whappdc
 
 import (
 	"log"
 	"sync"
 	"time"
+
+	core "github.com/hugot/whapp-deltachat/whappdc-core"
 )
 
-func NewMessageTracker(DB *Database, flushInterval time.Duration) *MessageTracker {
+func NewMessageTracker(DB *core.Database, flushInterval time.Duration) *MessageTracker {
 	tracker := &MessageTracker{
 		DB: DB,
 	}
@@ -21,7 +23,7 @@ func NewMessageTracker(DB *Database, flushInterval time.Duration) *MessageTracke
 // that calling WasSent immediately after calling MarkSent will most likely not return an
 // up to date answer.
 type MessageTracker struct {
-	DB             *Database
+	DB             *core.Database
 	delivered      [80]*string
 	deliveredMutex sync.RWMutex
 	deliveredIdx   int
