@@ -51,8 +51,7 @@ func (h *WhappHandler) HandleError(err error) {
 		return
 	}
 
-	typeLogString := fmt.Sprintf("Whatsapp Error of type: %T", err)
-	log.Println(typeLogString)
+	log.Println(fmt.Sprintf("Whatsapp Error of type: %T", err))
 
 	logString := "Whatsapp Error: " + err.Error()
 	log.Println(logString)
