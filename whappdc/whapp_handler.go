@@ -54,8 +54,6 @@ func (h *WhappHandler) HandleError(err error) {
 	typeLogString := fmt.Sprintf("Whatsapp Error of type: %T", err)
 	log.Println(typeLogString)
 
-	// Calling err.Error() here may cause a nil pointer dereference panic. See defer
-	// statement above.
 	logString := "Whatsapp Error: " + err.Error()
 	log.Println(logString)
 
