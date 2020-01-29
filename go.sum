@@ -17,6 +17,8 @@ github.com/gorilla/websocket v1.4.1 h1:q7AeDBpnBk8AogcD4DSag/Ukw/KV+YhzLj2bP5HvK
 github.com/gorilla/websocket v1.4.1/go.mod h1:YR8l580nyteQvAITg2hZ9XVh4b55+EU/adAjf1fMHhE=
 github.com/hugot/go-deltachat v0.0.0-20200115103405-94f97902030f h1:mfCED+euCowUmdBepRI+AMzn850HFyB3gV8743RnZfY=
 github.com/hugot/go-deltachat v0.0.0-20200115103405-94f97902030f/go.mod h1:QFRDi9Rx2oT6xcrUhar6xBPHCwvuGabDxFhTqaZUfNI=
+github.com/hugot/go-deltachat v0.0.0-20200129012921-ed391e8c375b h1:D57KR1i6DP2smSv00kojlJJHuftZ2Oedy8SrhpECUOY=
+github.com/hugot/go-deltachat v0.0.0-20200129012921-ed391e8c375b/go.mod h1:QFRDi9Rx2oT6xcrUhar6xBPHCwvuGabDxFhTqaZUfNI=
 github.com/kr/pretty v0.2.0 h1:s5hAObm+yFO5uHYt5dYjxi2rXrsnmRpJx4OYvIWUaQs=
 github.com/kr/pretty v0.2.0/go.mod h1:ipq/a2n7PKx3OHsz4KJII5eveXtPO4qwEXGdVfWzfnI=
 github.com/kr/pty v1.1.1/go.mod h1:pFQYn66WHrOpPYNljwOMqo10TkYh1fy3cYio2l3bCsQ=
