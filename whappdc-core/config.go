@@ -7,9 +7,10 @@ import (
 )
 
 type AppConfig struct {
-	DataFolder  string `yaml:"data_folder"`
-	UserAddress string `yaml:"user"`
-	ShowFromMe  bool   `yaml:"show_from_me"`
+	DataFolder     string `yaml:"data_folder"`
+	UserAddress    string `yaml:"user"`
+	ShowFromMe     bool   `yaml:"show_from_me"`
+	VerifiedGroups bool   `yaml:"verified_groups"`
 }
 
 type Config struct {

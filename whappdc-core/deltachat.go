@@ -56,31 +56,38 @@ func BootstrapDcClientFromConfig(config Config, ctx *BridgeContext) (*deltachat.
 	userName := "user"
 	dcUserID := DCCtx.CreateContact(&userName, &config.App.UserAddress)
 
-	// Send a message in a 1:1 chat first, this will let the user's client know that the
-	// crypto setup has changed if it has
-	DCCtx.SendTextMessage(
-		DCCtx.CreateChatByContactID(dcUserID),
-		"Hi, Whapp-Deltachat is initializing",
-	)
-
-	userChatIDRaw := ctx.DB.Get([]byte("user-chat-id"))
 	var (
 		userChatID uint32
 		err        error
 	)
 
-	if userChatIDRaw == nil {
-		userChatID, err = AddUserAsVerifiedContact(dcUserID, dcClient)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		userChatID = binary.LittleEndian.Uint32(userChatIDRaw)
-	}
+	if config.App.VerifiedGroups {
+		// Send a message in a 1:1 chat first, this will let the user's client know that the
+		// crypto setup has changed if it has
+		DCCtx.SendTextMessage(
+			DCCtx.CreateChatByContactID(dcUserID),
+			"Hi, Whapp-Deltachat is initializing",
+		)
 
-	userChatIDbs := make([]byte, 4)
-	binary.LittleEndian.PutUint32(userChatIDbs, userChatID)
-	err = ctx.DB.Put([]byte("user-chat-id"), userChatIDbs)
+		userChatIDRaw := ctx.DB.Get([]byte("user-chat-id"))
+
+		// The verified group chat that is used as 1:1 between whappDC and the user is
+		// created here if verified groups are enabled.
+		if userChatIDRaw == nil {
+			userChatID, err = AddUserAsVerifiedContact(dcUserID, dcClient)
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			userChatID = binary.LittleEndian.Uint32(userChatIDRaw)
+		}
+
+		userChatIDbs := make([]byte, 4)
+		binary.LittleEndian.PutUint32(userChatIDbs, userChatID)
+		err = ctx.DB.Put([]byte("user-chat-id"), userChatIDbs)
+	} else {
+		userChatID = DCCtx.CreateChatByContactID(dcUserID)
+	}
 
 	ctx.DCUserID = dcUserID
 	ctx.DCUserChatID = userChatID

@@ -48,7 +48,7 @@ func (w *WhappContext) GetOrCreateDCIDForJID(JID string) (uint32, error) {
 		chatName = sender.Name
 	}
 
-	DCID := w.BridgeCtx.DCContext.CreateGroupChat(true, chatName)
+	DCID := w.BridgeCtx.DCContext.CreateGroupChat(w.BridgeCtx.Config.App.VerifiedGroups, chatName)
 
 	err := w.BridgeCtx.DB.StoreDCIDForJID(JID, DCID)
 

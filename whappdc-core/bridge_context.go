@@ -1,6 +1,8 @@
 package core
 
 import (
+	"log"
+
 	"github.com/Rhymen/go-whatsapp"
 	"github.com/hugot/go-deltachat/deltabot"
 	"github.com/hugot/go-deltachat/deltachat"
@@ -46,6 +48,7 @@ func (b *BridgeContext) Init(
 	}
 
 	for i := 0; i < 10; i++ {
+		log.Println("Attempting whapp login")
 		err = CreateAndLoginWhappConnection(b.Config.App.DataFolder, b)
 
 		if err == nil {
