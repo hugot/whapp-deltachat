@@ -7,8 +7,8 @@ import (
 	"os/signal"
 	"syscall"
 
-	bridge "github.com/hugot/whapp-deltachat/whappdc-bridge"
-	core "github.com/hugot/whapp-deltachat/whappdc-core"
+	bridge "github.com/hugot/whapp-deltachat/bridge"
+	"github.com/hugot/whapp-deltachat/core"
 )
 
 func main() {

@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/Rhymen/go-whatsapp"
-	core "github.com/hugot/whapp-deltachat/whappdc-core"
+	"github.com/hugot/whapp-deltachat/core"
 )
 
 // WhappHandler implements go-whaptsapp.Handler

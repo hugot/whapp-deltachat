@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	core "github.com/hugot/whapp-deltachat/whappdc-core"
+	"github.com/hugot/whapp-deltachat/core"
 )
 
 func NewMessageTracker(DB *core.Database, flushInterval time.Duration) *MessageTracker {

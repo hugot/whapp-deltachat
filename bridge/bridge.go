@@ -5,8 +5,8 @@ import (
 
 	"github.com/hugot/go-deltachat/deltabot"
 	"github.com/hugot/whapp-deltachat/botcommands"
+	"github.com/hugot/whapp-deltachat/core"
 	"github.com/hugot/whapp-deltachat/whappdc"
-	core "github.com/hugot/whapp-deltachat/whappdc-core"
 )
 
 type Bridge struct {

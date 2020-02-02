@@ -7,7 +7,7 @@ import (
 
 	"github.com/Rhymen/go-whatsapp"
 	"github.com/hugot/go-deltachat/deltachat"
-	core "github.com/hugot/whapp-deltachat/whappdc-core"
+	"github.com/hugot/whapp-deltachat/core"
 )
 
 type MessageHandler struct {
