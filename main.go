@@ -7,7 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	bridge "github.com/hugot/whapp-deltachat/bridge"
+	"github.com/hugot/whapp-deltachat/bridge"
 	"github.com/hugot/whapp-deltachat/core"
 )
 
