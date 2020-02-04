@@ -1,19 +1,23 @@
 package whappdc
 
-import "log"
+import (
+	"github.com/hugot/go-deltachat/deltachat"
+)
 
 // ChatWorker receives structs of type MessageHandler and executes them sequentially. By
 // executing the handlers sequentially we try to make sure that the messages are sent
 // through deltachat in the right order.
 type ChatWorker struct {
+	logger           deltachat.Logger
 	incomingHandlers chan MessageHandler
 	quit             chan bool
 }
 
-func NewChatWorker() *ChatWorker {
+func NewChatWorker(logger deltachat.Logger) *ChatWorker {
 	return &ChatWorker{
 		incomingHandlers: make(chan MessageHandler, 3),
 		quit:             make(chan bool),
+		logger:           logger,
 	}
 }
 
@@ -35,7 +39,7 @@ func (w *ChatWorker) Start() {
 				err := handler.Action()
 
 				if err != nil {
-					log.Println(err)
+					w.logger.Println(err)
 				}
 			}
 		}

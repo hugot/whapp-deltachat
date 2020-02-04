@@ -19,6 +19,8 @@ github.com/hugot/go-deltachat v0.0.0-20200115103405-94f97902030f h1:mfCED+euCowU
 github.com/hugot/go-deltachat v0.0.0-20200115103405-94f97902030f/go.mod h1:QFRDi9Rx2oT6xcrUhar6xBPHCwvuGabDxFhTqaZUfNI=
 github.com/hugot/go-deltachat v0.0.0-20200129012921-ed391e8c375b h1:D57KR1i6DP2smSv00kojlJJHuftZ2Oedy8SrhpECUOY=
 github.com/hugot/go-deltachat v0.0.0-20200129012921-ed391e8c375b/go.mod h1:QFRDi9Rx2oT6xcrUhar6xBPHCwvuGabDxFhTqaZUfNI=
+github.com/hugot/go-deltachat v0.0.0-20200204072655-35fe0f4df433 h1:babXKcICVYwSgeGKXpJpN8rtFU6o6M7ot2fhSawdIuE=
+github.com/hugot/go-deltachat v0.0.0-20200204072655-35fe0f4df433/go.mod h1:QFRDi9Rx2oT6xcrUhar6xBPHCwvuGabDxFhTqaZUfNI=
 github.com/kr/pretty v0.2.0 h1:s5hAObm+yFO5uHYt5dYjxi2rXrsnmRpJx4OYvIWUaQs=
 github.com/kr/pretty v0.2.0/go.mod h1:ipq/a2n7PKx3OHsz4KJII5eveXtPO4qwEXGdVfWzfnI=
 github.com/kr/pty v1.1.1/go.mod h1:pFQYn66WHrOpPYNljwOMqo10TkYh1fy3cYio2l3bCsQ=

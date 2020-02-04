@@ -81,12 +81,14 @@ func WhappQrLogin(
 		tmpFile, err := ioutil.TempFile(storageDir+"/tmp", "XXXXXXX-qr")
 
 		if err != nil {
+			ctx.SendLog("Failed to create temporarary file: " + err.Error())
 			log.Fatal(err)
 		}
 
 		err = qrcode.WriteFile(qrCode, qrcode.Medium, 256, tmpFile.Name())
 
 		if err != nil {
+			ctx.SendLog("Failed to save qrcode file: " + err.Error())
 			log.Fatal(err)
 		}
 

@@ -1,16 +1,21 @@
 package whappdc
 
 import (
-	"log"
 	"sync"
 	"time"
 
+	"github.com/hugot/go-deltachat/deltachat"
 	"github.com/hugot/whapp-deltachat/core"
 )
 
-func NewMessageTracker(DB *core.Database, flushInterval time.Duration) *MessageTracker {
+func NewMessageTracker(
+	DB *core.Database,
+	flushInterval time.Duration,
+	logger deltachat.Logger,
+) *MessageTracker {
 	tracker := &MessageTracker{
-		DB: DB,
+		DB:     DB,
+		logger: logger,
 	}
 
 	tracker.FlushWithInterval(flushInterval)
@@ -24,6 +29,7 @@ func NewMessageTracker(DB *core.Database, flushInterval time.Duration) *MessageT
 // up to date answer.
 type MessageTracker struct {
 	DB             *core.Database
+	logger         deltachat.Logger
 	delivered      [80]*string
 	deliveredMutex sync.RWMutex
 	deliveredIdx   int
@@ -75,7 +81,7 @@ func (t *MessageTracker) FlushWithInterval(interval time.Duration) {
 			err := t.Flush()
 
 			if err != nil {
-				log.Println(err)
+				t.logger.Println(err)
 			}
 		}
 	}()

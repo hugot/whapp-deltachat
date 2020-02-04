@@ -2,7 +2,6 @@ package botcommands
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/Rhymen/go-whatsapp"
 	"github.com/hugot/go-deltachat/deltachat"
@@ -26,7 +25,6 @@ func (b *WhappBridge) Accepts(c *deltachat.Chat, m *deltachat.Message) bool {
 
 	if err != nil {
 		// The database is failing, very much an edge case.
-		log.Println(err)
 		b.bridgeCtx.SendLog(err.Error())
 
 		return false
@@ -43,7 +41,6 @@ func (b *WhappBridge) Execute(
 	JID, err := b.bridgeCtx.DB.GetWhappJIDForDCID(chat.GetID())
 
 	if err != nil {
-		log.Println(err)
 		b.bridgeCtx.SendLog(
 			fmt.Sprintf(
 				"Database error in Whapp bridge: %s",

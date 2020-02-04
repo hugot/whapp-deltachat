@@ -4,21 +4,24 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/hugot/go-deltachat/deltachat"
 	"github.com/mdp/qrterminal"
 )
 
-func DcClientFromConfig(databasePath string, config map[string]string) *deltachat.Client {
-	client := &deltachat.Client{}
+func DcClientFromConfig(
+	databasePath string,
+	logger deltachat.Logger,
+	config map[string]string,
+) *deltachat.Client {
+	client := deltachat.NewClient(logger)
 
 	// Handler for info logs from libdeltachat
 	client.On(deltachat.DC_EVENT_INFO, func(c *deltachat.Context, e *deltachat.Event) {
 		info, _ := e.Data2.String()
 
-		log.Println(*info)
+		logger.Println(*info)
 	})
 
 	client.Open(databasePath)
@@ -45,11 +48,15 @@ func DcClientFromConfig(databasePath string, config map[string]string) *deltacha
 
 // Note: this manipulates the BridgeContext.
 func BootstrapDcClientFromConfig(config Config, ctx *BridgeContext) (*deltachat.Client, error) {
-	dcClient := DcClientFromConfig(config.App.DataFolder+"/deltachat.db", config.Deltachat)
+	dcClient := DcClientFromConfig(
+		config.App.DataFolder+"/deltachat.db",
+		ctx.Logger(),
+		config.Deltachat,
+	)
 
 	DCCtx := dcClient.Context()
 
-	log.Println("Waiting for deltachat client to be configured")
+	ctx.Logger().Println("Waiting for deltachat client to be configured")
 	for !DCCtx.IsConfigured() {
 	}
 
@@ -74,7 +81,7 @@ func BootstrapDcClientFromConfig(config Config, ctx *BridgeContext) (*deltachat.
 		// The verified group chat that is used as 1:1 between whappDC and the user is
 		// created here if verified groups are enabled.
 		if userChatIDRaw == nil {
-			userChatID, err = AddUserAsVerifiedContact(dcUserID, dcClient)
+			userChatID, err = AddUserAsVerifiedContact(dcUserID, dcClient, ctx.Logger())
 			if err != nil {
 				return nil, err
 			}
@@ -99,7 +106,11 @@ func BootstrapDcClientFromConfig(config Config, ctx *BridgeContext) (*deltachat.
 
 // Add a user as verified contact to the deltachat context. This is necessary to be able
 // to create verified groups.
-func AddUserAsVerifiedContact(dcUserID uint32, client *deltachat.Client) (uint32, error) {
+func AddUserAsVerifiedContact(
+	dcUserID uint32,
+	client *deltachat.Client,
+	logger deltachat.Logger,
+) (uint32, error) {
 	confirmChan := make(chan bool)
 
 	client.On(
@@ -108,7 +119,7 @@ func AddUserAsVerifiedContact(dcUserID uint32, client *deltachat.Client) (uint32
 			contactIDInt, err := e.Data1.Int()
 
 			if err != nil {
-				log.Println(err)
+				logger.Println(err)
 
 				// Something weird is going on here, deltachat is not passing expected
 				// values. Make the join process fail.
@@ -119,7 +130,7 @@ func AddUserAsVerifiedContact(dcUserID uint32, client *deltachat.Client) (uint32
 			contactID := uint32(*contactIDInt)
 
 			if contactID != dcUserID {
-				log.Println(
+				logger.Println(
 					fmt.Sprintf(
 						"Unexpected contact ID encountered for securejoin progress: %v",
 						contactID,
@@ -132,7 +143,7 @@ func AddUserAsVerifiedContact(dcUserID uint32, client *deltachat.Client) (uint32
 			progress, err := e.Data2.Int()
 
 			if err != nil {
-				log.Println(err)
+				logger.Println(err)
 
 				confirmChan <- false
 				return
@@ -149,7 +160,7 @@ func AddUserAsVerifiedContact(dcUserID uint32, client *deltachat.Client) (uint32
 
 	chatID := ctx.CreateGroupChat(true, "Whapp-DC ***status***")
 
-	log.Println("Scan this qr code with your DC client")
+	fmt.Println("Scan this qr code with your DC client:")
 	qrterminal.Generate(
 		ctx.GetSecurejoinQR(chatID),
 		qrterminal.L,
@@ -159,10 +170,15 @@ func AddUserAsVerifiedContact(dcUserID uint32, client *deltachat.Client) (uint32
 	success := <-confirmChan
 
 	if !success {
-		return chatID, errors.New("Contact Verification process failed")
+		errorString := "Contact Verification process failed"
+		fmt.Fprintln(os.Stderr, errorString)
+
+		return chatID, errors.New(errorString)
 	}
 
-	log.Println("Securejoin verification completed")
+	successString := "Securejoin verification completed"
+	fmt.Println(successString)
+	logger.Println(successString)
 
 	return chatID, nil
 }

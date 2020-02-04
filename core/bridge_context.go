@@ -1,7 +1,9 @@
 package core
 
 import (
+	"fmt"
 	"log"
+	"os"
 
 	"github.com/Rhymen/go-whatsapp"
 	"github.com/hugot/go-deltachat/deltabot"
@@ -16,6 +18,7 @@ type BridgeContext struct {
 	DB           *Database
 	DCUserID     uint32
 	DCUserChatID uint32
+	logger       deltachat.Logger
 }
 
 func NewBridgeContext(config *Config) *BridgeContext {
@@ -39,6 +42,16 @@ func (b *BridgeContext) Init(
 		return err
 	}
 
+	logFile, err := os.OpenFile(
+		b.Config.App.DataFolder+"/whapp-deltachat.log",
+		os.O_WRONLY|os.O_CREATE|os.O_APPEND,
+		0644,
+	)
+
+	b.logger = log.New(logFile, "", log.LstdFlags)
+
+	fmt.Printf("Logs will be written to %s\n", logFile.Name())
+
 	dcClient, err := BootstrapDcClientFromConfig(*b.Config, b)
 
 	b.SendLog("Whapp-Deltachat started.")
@@ -48,7 +61,7 @@ func (b *BridgeContext) Init(
 	}
 
 	for i := 0; i < 10; i++ {
-		log.Println("Attempting whapp login")
+		b.SendLog(fmt.Sprintf("Attempting whapp login (attempt %d)", i+1))
 		err = CreateAndLoginWhappConnection(b.Config.App.DataFolder, b)
 
 		if err == nil {
@@ -62,7 +75,7 @@ func (b *BridgeContext) Init(
 
 	b.WhappConn.AddHandler(whappHandler)
 
-	bot := &deltabot.Bot{}
+	bot := deltabot.NewBot(b.logger)
 
 	for _, command := range botCommands {
 		bot.AddCommand(command)
@@ -87,6 +100,11 @@ func (b *BridgeContext) Close() error {
 	return err
 }
 
+func (b *BridgeContext) Logger() deltachat.Logger {
+	return b.logger
+}
+
 func (b *BridgeContext) SendLog(logString string) {
+	b.logger.Println(logString)
 	b.DCContext.SendTextMessage(b.DCUserChatID, logString)
 }

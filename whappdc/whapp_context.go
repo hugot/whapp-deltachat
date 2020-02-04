@@ -1,7 +1,6 @@
 package whappdc
 
 import (
-	"log"
 	"time"
 
 	"github.com/Rhymen/go-whatsapp"
@@ -13,7 +12,11 @@ func NewWhappContext(
 	bridgeCtx *core.BridgeContext,
 	msgTrackerFlushInterval time.Duration,
 ) *WhappContext {
-	messageTracker := NewMessageTracker(bridgeCtx.DB, msgTrackerFlushInterval)
+	messageTracker := NewMessageTracker(
+		bridgeCtx.DB,
+		msgTrackerFlushInterval,
+		bridgeCtx.Logger(),
+	)
 
 	return &WhappContext{
 		BridgeCtx:      bridgeCtx,
@@ -65,7 +68,6 @@ func (w *WhappContext) MessageWasSent(ID string) bool {
 	sent, err := w.MessageTracker.WasSent(ID)
 
 	if err != nil {
-		log.Println(err)
 		w.BridgeCtx.SendLog(err.Error())
 	}
 
@@ -98,7 +100,6 @@ func (w *WhappContext) markSentIf404Download(ID *string, err error) {
 		err := w.MessageTracker.MarkSent(ID)
 
 		if err != nil {
-			log.Println(err)
 			w.BridgeCtx.SendLog(err.Error())
 		}
 	}

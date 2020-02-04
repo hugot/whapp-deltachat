@@ -2,7 +2,6 @@ package whappdc
 
 import (
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/Rhymen/go-whatsapp"
@@ -21,7 +20,7 @@ func NewWhappHandler(
 ) *WhappHandler {
 	return &WhappHandler{
 		WhappCtx:      NewWhappContext(bridgeCtx, msgTrackerFlushInterval),
-		MessageWorker: NewMessageWorker(),
+		MessageWorker: NewMessageWorker(bridgeCtx.Logger()),
 	}
 }
 
@@ -43,18 +42,16 @@ func (h *WhappHandler) HandleError(err error) {
 		)
 
 		if err != nil {
-			logString := "Failed to restore whatsapp connection: " + err.Error()
-			log.Println(logString)
-			h.WhappCtx.BridgeCtx.SendLog(logString)
+			h.WhappCtx.BridgeCtx.SendLog("Failed to restore whatsapp connection: " + err.Error())
 		}
 
 		return
 	}
 
-	log.Println(fmt.Sprintf("Whatsapp Error of type: %T", err))
+	h.WhappCtx.BridgeCtx.Logger().Println(fmt.Sprintf("Whatsapp Error of type: %T", err))
 
 	logString := "Whatsapp Error: " + err.Error()
-	log.Println(logString)
+	h.WhappCtx.BridgeCtx.Logger().Println(logString)
 
 	// Invalid ws data seems to be pretty common, let's not bore the user with that.xg
 	if err.Error() != "error processing data: "+whatsapp.ErrInvalidWsData.Error() {
