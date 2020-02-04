@@ -51,6 +51,10 @@ func (b *WhappBridge) Execute(
 		return
 	}
 
+	if m.IsInfo() {
+		return
+	}
+
 	text := whatsapp.TextMessage{
 		Info: whatsapp.MessageInfo{
 			RemoteJid: *JID,
