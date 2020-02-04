@@ -268,7 +268,7 @@ func DetermineSenderName(b *core.BridgeContext, info whatsapp.MessageInfo) strin
 	}
 
 	contact, ok := b.WhappConn.Store.Contacts[senderName]
-	if ok {
+	if ok && contact.Name != "" {
 		senderName = contact.Name
 	}
 
