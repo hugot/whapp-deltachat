@@ -65,6 +65,7 @@ func (b *BridgeContext) Init(
 		err = CreateAndLoginWhappConnection(b.Config.App.DataFolder, b)
 
 		if err == nil {
+			b.SendLog("Whapp login was successful")
 			break
 		}
 	}
