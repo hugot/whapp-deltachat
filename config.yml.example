@@ -1,5 +1,5 @@
 app:
-  # where whapp-deltachat gets to store it's data
+  # where whapp-deltachat gets to store its data
   data_folder: /var/lib/whapp-deltachat
   # The address of the deltachat user you want to use the bridge with
   user: chat@example.com
