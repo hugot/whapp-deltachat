@@ -30,7 +30,9 @@ func (b *WhappBridge) Accepts(c *deltachat.Chat, m *deltachat.Message) bool {
 		return false
 	}
 
-	return chatJID != nil
+	// Only forward messages for known groups,
+	// Don't forward info messages like "group name changed" etc.
+	return chatJID != nil && !m.IsInfo()
 }
 
 func (b *WhappBridge) Execute(
@@ -48,10 +50,6 @@ func (b *WhappBridge) Execute(
 			),
 		)
 
-		return
-	}
-
-	if m.IsInfo() {
 		return
 	}
 
