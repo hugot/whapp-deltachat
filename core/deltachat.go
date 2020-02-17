@@ -121,8 +121,6 @@ func AddUserAsVerifiedContact(
 			if err != nil {
 				logger.Println(err)
 
-				// Something weird is going on here, deltachat is not passing expected
-				// values. Make the join process fail.
 				confirmChan <- false
 				return
 			}

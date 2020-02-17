@@ -22,7 +22,7 @@ func (b *Bridge) Init(config *core.Config) error {
 		whappHandler,
 		[]deltabot.Command{
 			&botcommands.Echo{},
-			botcommands.NewWhappBridge(ctx),
+			botcommands.NewTextMessageProxy(ctx),
 		},
 	)
 

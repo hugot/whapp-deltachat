@@ -8,34 +8,21 @@ import (
 	"github.com/hugot/whapp-deltachat/core"
 )
 
-func NewWhappBridge(bridgeContext *core.BridgeContext) *WhappBridge {
-	return &WhappBridge{
+func NewTextMessageProxy(bridgeContext *core.BridgeContext) *TextMessageProxy {
+	return &TextMessageProxy{
 		bridgeCtx: bridgeContext,
 	}
 }
 
-type WhappBridge struct {
+type TextMessageProxy struct {
 	bridgeCtx *core.BridgeContext
 }
 
-func (b *WhappBridge) Accepts(c *deltachat.Chat, m *deltachat.Message) bool {
-	chatID := c.GetID()
-
-	chatJID, err := b.bridgeCtx.DB.GetWhappJIDForDCID(chatID)
-
-	if err != nil {
-		// The database is failing, very much an edge case.
-		b.bridgeCtx.SendLog(err.Error())
-
-		return false
-	}
-
-	// Only forward messages for known groups,
-	// Don't forward info messages like "group name changed" etc.
-	return chatJID != nil && !m.IsInfo()
+func (b *TextMessageProxy) Accepts(c *deltachat.Chat, m *deltachat.Message) bool {
+	return b.Accepts(c, m)
 }
 
-func (b *WhappBridge) Execute(
+func (b *TextMessageProxy) Execute(
 	c *deltachat.Context,
 	chat *deltachat.Chat,
 	m *deltachat.Message,

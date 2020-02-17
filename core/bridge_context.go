@@ -109,3 +109,21 @@ func (b *BridgeContext) SendLog(logString string) {
 	b.logger.Println(logString)
 	b.DCContext.SendTextMessage(b.DCUserChatID, logString)
 }
+
+// Returns true when a DC message is eligible to be bridged.
+func (b *BridgeContext) Accepts(c *deltachat.Chat, m *deltachat.Message) bool {
+	chatID := c.GetID()
+
+	chatJID, err := b.DB.GetWhappJIDForDCID(chatID)
+
+	if err != nil {
+		// The database is failing, very much an edge case.
+		b.SendLog(err.Error())
+
+		return false
+	}
+
+	// Only forward messages for known groups,
+	// Don't forward info messages like "group name changed" etc.
+	return chatJID != nil && !m.IsInfo()
+}
